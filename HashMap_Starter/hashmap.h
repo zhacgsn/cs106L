@@ -11,6 +11,9 @@
 #include <sstream>              // for istringstream
 #include "hashmap_iterator.h"
 #include <vector>
+// 模板直到实例化时才会产生代码，用 .h文件包含 .cpp文件
+// #include "hashmap.cpp"
+// 但是放在类定义之后 #include
 
 // add any other includes that are necessary
 
@@ -76,6 +79,8 @@ public:
      * Notes: recall that you cannot modify the element a const_iterator is pointing to.
      * Also, a const_iterator is not a const iterator!
      */
+    // const iterator: 不可以自增，可以解引用改变指向的量的值
+    // const_iterator: 可以自增，不可以解引用改变指向的量的值
     using const_iterator = HashMapIterator<HashMap, true>;
 
     /*
@@ -83,6 +88,7 @@ public:
      * This allows the HashMapIterators to see the private members, which is
      * important because the iterator needs to know what element it is pointing to.
      */
+    // 使迭代器类可访问到此类私有成员
     friend class HashMapIterator<HashMap, false>;
     friend class HashMapIterator<HashMap, true>;
 
@@ -118,6 +124,7 @@ public:
     * HashMap<int, int> map(1.0);  // double -> int conversion not allowed.
     * HashMap<int, int> map = 1;   // copy-initialization, does not compile.
     */
+    // explicit修饰构造函数时，可防止形参隐式转换和拷贝初始化(=)
     explicit HashMap(size_t bucket_count, const H& hash = H());
 
     /*
@@ -143,7 +150,7 @@ public:
     *
     * Complexity: O(1) (inlined because function is short)
     */
-    inline size_t size();
+    inline size_t size() const;
 
     /*
     * Returns whether the HashMap is empty.
@@ -156,7 +163,7 @@ public:
     *
     * Complexity: O(1) (inlined because function is short)
     */
-    inline bool empty();
+    inline bool empty() const;
 
     /*
     * Returns the load_factor, defined as size/bucket_count.
@@ -172,7 +179,7 @@ public:
     * Notes: our minimal implementation does not automatically rehash when the load
     * factor is too high. If you want as an extension, you can implement automatic rehashing.
     */
-    inline float load_factor();
+    inline float load_factor() const;
 
     /*
     * Returns the number of buckets.
@@ -211,7 +218,7 @@ public:
     * Since contains feels more natural to students who've used the Stanford libraries
     * and will be available in the future, we will implement map.contains(key).
     */
-    bool contains(const K& key);
+    bool contains(const K& key) const;
 
     /*
     * Returns a l-value reference to the mapped value given a key.
@@ -232,7 +239,7 @@ public:
     * if a key is not found. Instead, it will create a K/M pair for that key with a default
     * mapped value. This function is also not const-correct, which you will fix in milestone 2.
     */
-    M& at(const K& key);
+    const M& at(const K& key) const;
 
     /*
     * Removes all K/M pairs the HashMap.
@@ -349,6 +356,13 @@ public:
     */
     void rehash(size_t new_buckets);
 
+    // 只有返回值类型不同的函数不能被重载！！！
+    // （可能是编译器为函数名生成的符号相同？）
+
+    // const对象只能调用 const成员函数，不能调用非 const成员函数
+    // 非 const对象既能调用 const成员函数，也能调用非 const成员函数
+
+    // const成员函数要么返回值，要么返回 const引用或指针
     /*
      * Returns an iterator to the first element.
      * This overload is used when the HashMap is non-const.
@@ -397,7 +411,7 @@ public:
     * Tip: place map.debug() in various places in the test cases to figure out which operation
     * is failing. Super useful when we debugged our code.
     */
-    void debug();
+    void debug() const;
 
     /* EXTRA CONSTURCTORS */
 
@@ -469,6 +483,7 @@ private:
     *      n->next = nullptr;
     */
     struct node {
+        // using value_type = std::pair<const K, M>;
         value_type value;
         node* next;
 
@@ -538,6 +553,7 @@ private:
     * instance variable: _size, the number of elements, which are K/M pairs.
     * Don't confuse this with the number of buckets!
     */
+    // 键值对数量
     size_t _size;
 
     /*
@@ -572,6 +588,7 @@ private:
      * A private type alias used by the iterator class so it can traverse
      * the buckets.
      */
+    // decltype(expression) 返回表达式类型(不求值)
     using bucket_array_type = decltype(_buckets_array);
 
 };

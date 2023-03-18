@@ -12,7 +12,7 @@ int student_main();
 //student_main helpers. Remember to change the necessary function signatures here and 
 //where they are implemented for milestone 1!
 void init_map(HashMap<string, int>& map);
-void print_difference(HashMap<string, int>& lecturer_record, string lecturer1, string lecturer2);
+void print_difference(const HashMap<string, int>& lecturer_record, const string lecturer1, const string lecturer2);
 template<typename KeyType, typename MappedTyped>
 std::set<KeyType> find_keys(HashMap<KeyType, MappedTyped>& map);
 
@@ -65,9 +65,12 @@ void init_map(HashMap<string, int>& map) {
 }
 
 //this will return a set of all the keys in parameter map
+// 可以把非 const的 HashMap map传给 const HashMap& map吗？可以！
+// 但是通过 const HashMap& map来调用成员函数，必须是 const成员函数
 template<typename KeyType, typename MappedTyped>
 std::set<KeyType> find_keys(HashMap<KeyType, MappedTyped>& map){
     std::set<KeyType> res;
+    // 如果 map是 reference to const，begin()和 end()必须有 const版本
     for(auto it = map.begin(); it != map.end(); ++it){
         //Remember structured binding? :)
         auto [key, val] = *it; //at iterator points to a key, value pair in a map!
@@ -78,7 +81,7 @@ std::set<KeyType> find_keys(HashMap<KeyType, MappedTyped>& map){
 
 //this will find and print which lecturer lectured first, and how long after them the
 //second lecturer lectured
-void print_difference(HashMap<string, int>& lecturer_record, string lecturer1, string lecturer2){
+void print_difference(const HashMap<string, int>& lecturer_record, const string lecturer1, const string lecturer2){
     int year1 = lecturer_record.at(lecturer1);
     int year2 = lecturer_record.at(lecturer2);
     if(year1 < year2){
