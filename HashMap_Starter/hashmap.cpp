@@ -3,7 +3,7 @@
 *      TODO: write a comment here.
 */
 
-// #include "hashmap.h"
+#include "hashmap.h"
 
 template <typename K, typename M, typename H>
 HashMap<K, M, H>::HashMap() : 
@@ -41,12 +41,20 @@ inline size_t HashMap<K, M, H>::bucket_count() const {
 };
 
 template <typename K, typename M, typename H>
-const M& HashMap<K, M, H>::at(const K& key) const {
+M& HashMap<K, M, H>::at(const K& key) {
     auto [prev, node_found] = find_node(key);
             if (node_found == nullptr) {
         throw std::out_of_range("HashMap<K, M, H>::at: key not found");
     }
     return node_found->value.second;
+}
+
+template <typename K, typename M, typename H>
+const M& HashMap<K, M, H>::at(const K& key) const {
+    // return static_cast<const M>(const_cast<HashMap<K, M, H>*>(this)->at(key));
+    // 不需要转换成 const M
+    // 直接把非 const值赋给 reference to const
+    return static_cast<const M&>(const_cast<HashMap<K, M, H>*>(this)->at(key));
 }
 
 template <typename K, typename M, typename H>
@@ -67,6 +75,13 @@ void HashMap<K, M, H>::clear() {
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::iterator HashMap<K, M, H>::find(const K& key) {
     return make_iterator(find_node(key).second);
+}
+
+template <typename K, typename M, typename H>
+typename HashMap<K, M, H>::const_iterator HashMap<K, M, H>::find(const K& key) const {
+    // const对象只能调用 const版本的成员函数
+    // 通过把 this指针转换成非 const类指针，来调用非 const版本的成员函数
+    return static_cast<const_iterator>(const_cast<HashMap<K, M, H>*>(this)->find(key));
 }
 
 template <typename K, typename M, typename H>
@@ -126,6 +141,12 @@ typename HashMap<K, M, H>::const_iterator HashMap<K, M, H>::begin() const {
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::iterator HashMap<K, M, H>::end() {
     return make_iterator(nullptr);
+}
+
+template <typename K, typename M, typename H>
+typename HashMap<K, M, H>::const_iterator HashMap<K, M, H>::end() const 
+{
+    return static_cast<const_iterator>(const_cast<HashMap<K, M, H>*>(this)->end());
 }
 
 template <typename K, typename M, typename H>
@@ -250,4 +271,55 @@ std::ostream& operator<<(std::ostream& os, const HashMap<K, M, H>& rhs) {
 
 /* Begin Milestone 2: Special Member Functions */
 
+template <typename K, typename M, typename H>
+HashMap<K, M, H>::HashMap(const HashMap& map) : HashMap(map.bucket_count(), map._hash_function) {
+    for (auto [key, value] : map) {
+        this->insert({key, value});
+    }
+}
+
+template <typename K, typename M, typename H>
+HashMap<K, M, H>& HashMap<K, M, H>::operator=(const HashMap& map) {
+    if (&map == this) {
+        return *this;
+    }
+    this->clear();
+
+    for (auto [key, value] : map) {
+        this->insert({key, value});
+    }
+    return *this;
+}
+
+template <typename K, typename M, typename H>
+HashMap<K, M, H>::HashMap(HashMap&& map) :
+    _size{std::move(map._size)},
+    _hash_function{std::move(map._hash_function)},
+    _buckets_array{map.bucket_count(), nullptr} {    
+    for (auto i = 0; i < map.bucket_count(); i++) {
+        this->_buckets_array[i] = std::move(map._buckets_array[i]);
+        map._buckets_array[i] = nullptr;
+    }
+    map._size = 0;
+}
+
+template <typename K, typename M, typename H>
+HashMap<K, M, H>& HashMap<K, M, H>::operator=(HashMap&& map) {
+    if (&map == this) {
+        return *this;
+    }
+    this->clear();
+    this->_size = std::move(map._size);
+    this->_hash_function = std::move(map._hash_function);
+    this->_buckets_array.resize(map.bucket_count());
+    for (auto i = 0; i < map.bucket_count(); i++) {
+        // this->insert(std::move(*it));
+        this->_buckets_array[i] = std::move(map._buckets_array[i]);
+        map._buckets_array[i] = nullptr;
+
+    }
+    map._size = 0;
+
+    return *this;
+}
 /* end student code */

@@ -2,8 +2,8 @@
 #include <set>
 using namespace std;
 //UNCOMMENT THESE FOR MILESTONE 2
-// #include "tests.cpp"
-// #include "test_settings.cpp"
+#include "tests.cpp"
+#include "test_settings.cpp"
 #include <iostream>
 
 //declaring functions now so we can use them befpre we implement them!
@@ -11,10 +11,15 @@ int student_main();
 
 //student_main helpers. Remember to change the necessary function signatures here and 
 //where they are implemented for milestone 1!
+
+// 想改变调用函数时传递的对象：按引用 / 指针传递，如 void f(X&), void f(X*)
+// 不想改变调用函数时传递的对象，但对象很“大”：按指向常量的引用传递， 如 void f(const X&)
+//（只是不能通过该引用来改变实参，而非实参本身一定为常量）
+// 否则，按值传递， 如 void f(X)
 void init_map(HashMap<string, int>& map);
 void print_difference(const HashMap<string, int>& lecturer_record, const string lecturer1, const string lecturer2);
 template<typename KeyType, typename MappedTyped>
-std::set<KeyType> find_keys(HashMap<KeyType, MappedTyped>& map);
+std::set<KeyType> find_keys(const HashMap<KeyType, MappedTyped>& map);
 
 int main() {
     int answer;
@@ -25,7 +30,7 @@ int main() {
     } else if (answer == 2) {
         cout << ":P" << endl;
         //UNCOMMENT THIS FOR MILESTONE 2
-        // run_test_harness();
+        run_test_harness();
     } else {
         cout << "Please run your code again and hit 1 or 2 only!";
     }
@@ -68,7 +73,7 @@ void init_map(HashMap<string, int>& map) {
 // 可以把非 const的 HashMap map传给 const HashMap& map吗？可以！
 // 但是通过 const HashMap& map来调用成员函数，必须是 const成员函数
 template<typename KeyType, typename MappedTyped>
-std::set<KeyType> find_keys(HashMap<KeyType, MappedTyped>& map){
+std::set<KeyType> find_keys(const HashMap<KeyType, MappedTyped>& map){
     std::set<KeyType> res;
     // 如果 map是 reference to const，begin()和 end()必须有 const版本
     for(auto it = map.begin(); it != map.end(); ++it){

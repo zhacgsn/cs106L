@@ -107,7 +107,7 @@ public:
     /*
     * Constructor with bucket_count and hash function as parameters.
     *
-    * Creates an empty HashMap with a specified initial bucket_count and hash funciton.
+    * Creates an empty HashMap with a specified initial bucket_count(链表数量) and hash funciton.
     * If no hash function provided, default value of H is used.
     *
     * Usage:
@@ -136,6 +136,17 @@ public:
     */
     ~HashMap();
 
+    // 拷贝构造函数
+    HashMap(const HashMap<K, M, H>& map);
+
+    // 拷贝赋值运算符
+    HashMap<K, M, H>& operator=(const HashMap<K, M, H>& map);
+
+    // 移动构造函数
+    HashMap(HashMap<K, M, H>&& map);
+
+    // 移动赋值运算符
+    HashMap<K, M, H>& operator=(HashMap<K, M, H>&& map);
     /*
     * Returns the number of (K, M) pairs in the map.
     *
@@ -239,6 +250,7 @@ public:
     * if a key is not found. Instead, it will create a K/M pair for that key with a default
     * mapped value. This function is also not const-correct, which you will fix in milestone 2.
     */
+    M& at(const K& key);
     const M& at(const K& key) const;
 
     /*
@@ -274,6 +286,9 @@ public:
      */
     iterator find(const K& key);
 
+    // just want to use an iterator to iterate
+    const_iterator find(const K& key) const;
+
     /*
     * Inserts the K/M pair into the HashMap, if the key does not already exist.
     * If the key exists, then the operation is a no-op.
@@ -294,6 +309,10 @@ public:
     * Complexity: O(1) amortized average case
     */
     std::pair<iterator, bool> insert(const value_type& value);
+    // 只有返回值类型不同不能重载！
+    // 想用非 const对象返回 const迭代器，非 const对象调用时无法判断应该调用哪个 insert()
+    // 而 const对象不可能进行 insert操作，所以不需要 const版本
+    // std::pair<const_iterator, bool> insert(const value_type& value);
 
     /*
     * Erases a K/M pair (if one exists) corresponding to given key from the HashMap.
@@ -363,6 +382,7 @@ public:
     // 非 const对象既能调用 const成员函数，也能调用非 const成员函数
 
     // const成员函数要么返回值，要么返回 const引用或指针
+    // 非 const成员函数既能返回值，也能返回 const引用或指针
     /*
      * Returns an iterator to the first element.
      * This overload is used when the HashMap is non-const.
@@ -389,6 +409,8 @@ public:
      *      while (iter != map.end()) {...}
      */
     iterator end();
+    
+    const_iterator end() const;
 
 
     /*
@@ -454,6 +476,7 @@ public:
      * Indexing operator
      * Retrieves a reference to the mapped value corresponding to this key.
      * If no such key exists, a key/mapped value pair will be added to the HashMap.
+     * key不存在时会插入，所以不需要重载 const版本
      * The mapped value will have the default value for type M.
      *
      * Usage:
@@ -465,9 +488,6 @@ public:
      * Complexity: O(1) average case amortized plus complexity of K and M's constructor
      */
     M& operator[](const K& key);
-
-    /* Milestone 2 headers (you need to declare these) */
-    // TODO: declare headers for copy constructor/assignment, move constructor/assignment
 
 private:
     /*
