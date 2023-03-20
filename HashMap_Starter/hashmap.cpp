@@ -4,6 +4,7 @@
 */
 
 #include "hashmap.h"
+#include <unordered_map>
 
 template <typename K, typename M, typename H>
 HashMap<K, M, H>::HashMap() : 
@@ -291,20 +292,31 @@ HashMap<K, M, H>& HashMap<K, M, H>::operator=(const HashMap& map) {
     return *this;
 }
 
+// template <typename K, typename M, typename H>
+// HashMap<K, M, H>::HashMap(HashMap&& map) :
+//     _size{std::move(map._size)},
+//     _hash_function{std::move(map._hash_function)},
+//     _buckets_array{map.bucket_count(), nullptr} {
+//     for (auto i = 0; i < map.bucket_count(); i++) {
+//         this->_buckets_array[i] = std::move(map._buckets_array[i]);
+//     }
+// }
+
 template <typename K, typename M, typename H>
 HashMap<K, M, H>::HashMap(HashMap&& map) :
     _size{std::move(map._size)},
     _hash_function{std::move(map._hash_function)},
-    _buckets_array{map.bucket_count(), nullptr} {    
+    _buckets_array{map.bucket_count(), nullptr} {
     for (auto i = 0; i < map.bucket_count(); i++) {
         this->_buckets_array[i] = std::move(map._buckets_array[i]);
-        map._buckets_array[i] = nullptr;
     }
-    map._size = 0;
 }
 
 template <typename K, typename M, typename H>
 HashMap<K, M, H>& HashMap<K, M, H>::operator=(HashMap&& map) {
+    // temp = std::move(map1);
+    // new_assign = std::move(temp);
+    // VERIFY_TRUE(check_map_equal(new_assign, temp), __LINE__);
     if (&map == this) {
         return *this;
     }
@@ -313,13 +325,8 @@ HashMap<K, M, H>& HashMap<K, M, H>::operator=(HashMap&& map) {
     this->_hash_function = std::move(map._hash_function);
     this->_buckets_array.resize(map.bucket_count());
     for (auto i = 0; i < map.bucket_count(); i++) {
-        // this->insert(std::move(*it));
         this->_buckets_array[i] = std::move(map._buckets_array[i]);
-        map._buckets_array[i] = nullptr;
-
     }
-    map._size = 0;
-
     return *this;
 }
 /* end student code */
